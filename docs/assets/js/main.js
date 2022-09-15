@@ -51,19 +51,21 @@ $('input[type=file]').change(function() {
             $('#targetImg').addClass("targetActive");
         }
         reader.readAsDataURL(image);
-        getDetectResp(image);
-        getResult(image, "targetImg");
+        getDetectResp(image, "targetImg");
+        getResult(5);
     }
     if (filetype.indexOf('video') > -1) {
         var $source = $('#tgVideo');
         $('#targetVideo').addClass("targetActive");
         $source[0].src = URL.createObjectURL(this.files[0]);
         $source.parent()[0].load();
-        nIntervId = setInterval(function() {
-            getDuration("tgVideo", localStorage.getItem("i"), "video");
-        }, 1000);
-        getDetectResp(URL.createObjectURL(this.files[0]));
-        getResult(URL.createObjectURL(this.files[0]));
+        // nIntervId = setInterval(function() {
+        //     getDuration("tgVideo", localStorage.getItem("i"), "video");
+        // }, 1000);
+        getDetectResp(this.files[0]);
+        getResult(5);
+        // console.log(this.files[0])
+        fileUpload(this.files[0]);
     }
     if (filetype.indexOf('audio') > -1) {
         var objUrl = getObjectURL(this.files[0]);
@@ -73,9 +75,34 @@ $('input[type=file]').change(function() {
         nIntervId = setInterval(function() {
             getDuration("targetAudio", localStorage.getItem("i"), "audio");
         }, 1000);
-        getResult(objUrl);
+        getResult(5);
     }
 });
+
+const fileUpload = (file) => {
+    var data = new FormData();
+    data.append('video', file); //Correct: sending the Blob itself
+    $.ajax({
+        type: "POST",
+        enctype: 'multipart/form-data',
+        url: "/api/video/data/video_upload",
+        data: data,
+        processData: false,
+        contentType: false,
+        cache: false,
+        timeout: 600000,
+        success: function(data) {
+            console.log("upload: " + data);
+            // {
+            //     ’code’: 20051
+            //     ’url’: ”http://localhost:5000/static/video/nhsijqpoda.mp4” 
+            // }
+        },
+        error: function(e) {
+            console.log("ERROR : ", e);
+        }
+    });
+}
 
 const getObjectURL = (file) => {
     var url = null;
@@ -105,6 +132,8 @@ const getDuration = (id, i, type) => {
         if (progressPercent == 100) { stopPlay(); }
     }
 
+    drawImgSet(Math.round(progressPercent));
+
     $('#chartBar').css('width', progressPercent + '%');
     $('#dectBar').css('width', progressPercent + '%');
 
@@ -120,21 +149,117 @@ const stopPlay = () => {
     localStorage.setItem("i", 0);
 }
 
-const getDetectResp = (file) => {
-    $('#detectResp').attr('src', "dist/img/favicon.jpg");
+const getDetectResp = (file, id) => {
+    $.ajax({
+        type: "POST",
+        url: "/api/video/data/video_detect",
+        data: file.name,
+        timeout: 600000,
+        success: function(data) {
+            console.log("detect: " + data);
+            // {
+            //     ’code’: 20052
+            //     ’is fake’: False
+            //     ’seg img url’: [”http://localhost:5000/static/seg img/pred mask 0 132017.png”, ”http://localhost:5000/static/seg img mask 1 506074.png”, ””, ””, ””, ””,
+            //     ””, ””, ””, ””, ””, ””, ””, ””, ””, ””,]
+            //     ’timescore1’: [1.0,2.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+            //     ’timescore2’: [3.0,4.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+            // }
+            localStorage.setItem("dectData", data);
+            nIntervId = setInterval(function() {
+                getDuration("tgVideo", localStorage.getItem("i"), "video");
+            }, 1000);
+            if (id !== "targetImg") {
+                $('#detectRespTime').css('display', "flex");
+                $('#detectRespChart').css('display', "flex");
+                drawChart(data);
+            }
+        },
+        error: function(e) {
+            console.log("ERROR : ", e);
+        }
+    });
+    //mock data
+    // $('#detectResp').attr('src', "dist/img/favicon.jpg");
 }
 
-const getResult = (file, id) => {
-    $('#resuTag').css('display', "contents");
-    $('#resuList').css('display', "block");
-    if (id !== "targetImg") {
-        $('#detectRespTime').css('display', "flex");
-        $('#detectRespChart').css('display', "flex");
-        drawChart();
+const drawImgSet = (percent) => {
+    let serial = (percent / 2) - 1;
+    let data = localStorage.getItem("dectData");
+    if (serial > 0) {
+        $('#detectResp').attr('src', data.seg_img_url[serial]);
+    } else {
+        $('#detectResp').attr('src', data.seg_img_url[0]);
     }
 }
 
-const drawChart = () => {
+const getResult = (count) => {
+    $.ajax({
+        type: "GET",
+        url: "/api/video/data/video_detected_data",
+        data: {
+            visual_count: count
+        },
+        timeout: 600000,
+        success: function(data) {
+            console.log("result: " + data);
+            // {
+            //     ’code’: 20053
+            //     ’data’: [{
+            //         ’id’: 0
+            //         ’timestamp’: ”09/14/2022, 15:52:32” ’title’: ”nhsijqpoda.mp4”
+            //         ’size’: ”10MB” ’duration’: ”10s” ’result’: ”Real” ’score 1’: 1.0 ’score 2’: 2.0
+            //     }] 
+            // }
+            drawList(data)
+        },
+        error: function(e) {
+            console.log("ERROR : ", e);
+        }
+    });
+}
+
+const viewChange = (type) => {
+    if (type == "model") {
+        $("#modelResu").css("display", "table");
+        $("#metaResu").css("display", "none");
+    }
+    if (type == "meta") {
+        $("#modelResu").css("display", "none");
+        $("#metaResu").css("display", "table");
+    }
+}
+
+const drawList = (data) => {
+    let classType = data.data[0].result == "Real" ? "badge badge-success" : "badge badge-danger";
+    $("#listBody").append(
+        '<tr>' +
+        '<td>' + data.data[0].id + '</td>' +
+        '<td><span class="' + classType + '">' + data.data[0].result + '</span></td>' +
+        '<td>' + data.data[0].score_1 + '</td>' +
+        '<td><div class="sparkbar" data-color="#00a65a" data-height="20">' + data.data[0].score_2 + '</div></td>' +
+        '</tr>');
+    id, result, timestamp, title, size, duration
+    $("#metaBody").append(
+        '<tr>' +
+        '<td>' + data.data[0].id + '</td>' +
+        '<td><span class="' + classType + '">' + data.data[0].result + '</span></td>' +
+        '<td>' + data.data[0].timestamp + '</td>' +
+        '<td>' + data.data[0].title + '</td>' +
+        '<td>' + data.data[0].size + '</td>' +
+        '<td><div class="sparkbar" data-color="#00a65a" data-height="20">' + data.data[0].duration + '</div></td>' +
+        '</tr>');
+    if (data.data[0].result != "Real") {
+        $('#resuTagerReal').css('display', "contents");
+        $('#resuTageFake').css('display', "none");
+    } else {
+        $('#resuTageFake').css('display', "contents");
+        $('#resuTagerReal').css('display', "none");
+    }
+    $('#resuList').css('display', "block");
+}
+
+const drawChart = (data) => {
     var $visitorsChart = $('#visitors-chart')
     var ticksStyle = {
         fontColor: '#495057',
@@ -148,7 +273,7 @@ const drawChart = () => {
             labels: ['0s', '2s', '4s', '6s', '8s', '10s', '12s', '14s', '16s', '18s', '20s', '22s', '24s', '26s', '28s', '30s'],
             datasets: [{
                     type: 'line',
-                    data: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    data: data.timescore1, // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                     backgroundColor: 'transparent',
                     borderColor: '#007bff',
                     pointBorderColor: '#007bff',
@@ -159,7 +284,7 @@ const drawChart = () => {
                 },
                 {
                     type: 'line',
-                    data: [79.248, 77.589, 12.641, 59.169, 32.479, 81.027, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    data: data.timescore2, //[79.248, 77.589, 12.641, 59.169, 32.479, 81.027, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                     backgroundColor: 'tansparent',
                     borderColor: '#ced4da',
                     pointBorderColor: '#ced4da',

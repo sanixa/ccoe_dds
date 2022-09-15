@@ -35,7 +35,7 @@
 
         <!-- Preloader -->
         <div class="preloader flex-column justify-content-center align-items-center">
-            <img class="animation__shake" src="dist/img/favicon.jpg" alt="Logo" height="60" width="60">
+            <img class="animation__shake" src="./dist/img/favicon.jpg" alt="Logo" height="60" width="60">
         </div>
 
         <!-- Navbar -->
@@ -176,8 +176,8 @@
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            <a href="index3.html" class="brand-link">
-                <img src="dist/img/favicon.jpg" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+            <a href="index.html" class="brand-link">
+                <img src="./dist/img/favicon.jpg" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
                 <span class="brand-text font-weight-light">CCoE DDS</span>
             </a>
 
@@ -323,7 +323,7 @@
                                         <div id="target" style="width: 100%;">
                                             <img id="targetImg" src="" class="targetClass">
                                             <video id="targetVideo" autoplay muted preload="metadata" class="targetClass">
-                                              <source src="" id="tgVideo">
+                                                <source src="" id="tgVideo">
                                             </video>
                                             <audio id="targetAudio" controls="" preload="metadata" class="targetClass"></audio>
                                         </div>
@@ -339,8 +339,12 @@
                                         <i class="far fa-circle nav-icon"></i> 偵測結果
                                     </h3>
 
-                                    <div id="resuTag" style="display: none;">
-                                        <input type="text" value="受篡改的影片" disabled="true" style="background: #fba5a65c;color: #7f0505b0;border: none;text-align: center;font-size: medium;border-radius: 50px;">
+                                    <div id="resuTageFake" style="display: none;">
+                                        <input type="text" value="受篡改的檔案" disabled="true" style="background: #fba5a65c;color: #7f0505b0;border: none;text-align: center;font-size: medium;border-radius: 50px;">
+                                    </div>
+
+                                    <div id="resuTagReal" style="display: none;">
+                                        <input type="text" value="未受篡改的檔案" disabled="true" style="background: #a5fbc75c;color: #1a7f05b0;border: none;text-align: center;font-size: medium;border-radius: 50px;">
                                     </div>
 
                                     <div class="card-tools" style="display:none;">
@@ -356,11 +360,11 @@
                                 <!-- /.card-header -->
                                 <div id="resuList" class="card-body" style="display:none;">
                                     <div>
-                                        <input type="button" value="Model Result" />
-                                        <input type="button" value="Mata Data" disabled="true" />
+                                        <input type="button" value="Model Result" onclick="viewChange('model')" />
+                                        <input type="button" value="Meta Data" onclick="viewChange('meta')" />
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table m-0">
+                                        <table id="modelResu" class="table m-0" style="display: table;">
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
@@ -369,39 +373,21 @@
                                                     <th>Lips Score</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody id="listBody">
+                                            </tbody>
+                                        </table>
+                                        <table id="metaResu" class="table m-0" style="display: none;">
+                                            <thead>
                                                 <tr>
-                                                    <td>3</td>
-                                                    <td><span class="badge badge-success">Real</span</td>
-                                                    <td>1</td>
-                                                    <td>
-                                                        <div class="sparkbar" data-color="#00a65a" data-height="20">46.605</div>
-                                                    </td>
+                                                    <th>ID</th>
+                                                    <th>Result</th>
+                                                    <th>Timestamp</th>
+                                                    <th>Title</th>
+                                                    <th>Size</th>
+                                                    <th>Duration</th>
                                                 </tr>
-                                                <tr>
-                                                    <td>2</td>
-                                                    <td><span class="badge badge-danger">Fake</span></td>
-                                                    <td>0.73</td>
-                                                    <td>
-                                                        <div class="sparkbar" data-color="#f56954" data-height="20">27.13</div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>1</td>
-                                                    <td><span class="badge badge-success">Real</span</td>
-                                                    <td>1</td>
-                                                    <td>
-                                                        <div class="sparkbar" data-color="#00a65a" data-height="20">46.605</div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>0</td>
-                                                    <td><span class="badge badge-success">Real</span</td>
-                                                    <td>1</td>
-                                                    <td>
-                                                        <div class="sparkbar" data-color="#00a65a" data-height="20">46.605</div>
-                                                    </td>
-                                              </tr>
+                                            </thead>
+                                            <tbody id="metaBody">
                                             </tbody>
                                         </table>
                                     </div>
@@ -422,7 +408,7 @@
                                     <!-- card tools -->
                                     <div class="card-tools" style="display: none;">
                                         <button type="button" class="btn btn-primary btn-sm" data-card-widget="collapse" title="Collapse">
-                                          <i class="fas fa-minus"></i>
+                                            <i class="fas fa-minus"></i>
                                         </button>
                                     </div>
                                     <!-- /.card-tools -->
@@ -430,8 +416,8 @@
                                 <div class="card-body">
                                     <!-- <div id="world-map" style="height: 250px; width: 100%;"></div> -->
                                     <img id="detectResp" src="" style="width:100%;">
-                                    <div id="detectRespTime" class="progress progress-sm"  style="display:none;">
-                                      <div id="dectBar" class="progress-bar bg-primary" style="width:0%;"></div>
+                                    <div id="detectRespTime" class="progress progress-sm" style="display:none;">
+                                        <div id="dectBar" class="progress-bar bg-primary" style="width:0%;"></div>
                                     </div>
                                     <div id="dectPercentage" style="width: 0%; font-size: small; text-align: right; color: rgb(2, 123, 255);font-weight:bolder;"></div>
                                 </div>
@@ -453,18 +439,18 @@
 
                                     <div class="card-tools" style="display: none;">
                                         <button type="button" class="btn bg-info btn-sm" data-card-widget="collapse">
-                                          <i class="fas fa-minus"></i>
+                                            <i class="fas fa-minus"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex flex-row justify-content-end">
                                         <span class="mr-2">
-                                          <i class="fas fa-square text-primary"></i> DFDC3
+                                            <i class="fas fa-square text-primary"></i> DFDC3
                                         </span>
 
-                                                        <span>
-                                          <i class="fas fa-square text-gray"></i> LIPS
+                                        <span>
+                                            <i class="fas fa-square text-gray"></i> LIPS
                                         </span>
                                     </div>
                                     <div class="position-relative mb-4">

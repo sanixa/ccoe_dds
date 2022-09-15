@@ -6,3 +6,16 @@
 .targetActive {
     display: flex;
 }
+
+.images {
+    display: flex;
+    align-items: flex-start;
+    transition: transform 0.5s;
+    /* 圖片切換在 0.5s 內完成，以免切換速度過快或者過慢，用戶不適 */
+}
+
+.window {
+    width: 370px;
+    /* 以上三張圖片的寬為：370px */
+    overflow: hidden;
+}
