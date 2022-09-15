@@ -1,0 +1,8 @@
+.targetClass {
+    display: none;
+    width: 100%;
+}
+
+.targetActive {
+    display: flex;
+}
