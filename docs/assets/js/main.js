@@ -85,7 +85,7 @@ const fileUpload = (file) => {
     $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',
-        url: "/api/video/data/video_upload",
+        url: "http://localhost:5000/api/video/data/video_upload",
         data: data,
         processData: false,
         contentType: false,
@@ -152,8 +152,10 @@ const stopPlay = () => {
 const getDetectResp = (file, id) => {
     $.ajax({
         type: "POST",
-        url: "/api/video/data/video_detect",
-        data: file.name,
+        url: "http://localhost:5000/api/video/data/video_detect",
+        data: {
+            file_name: file.name
+        },
         timeout: 600000,
         success: function(data) {
             console.log("detect: " + data);
@@ -196,7 +198,7 @@ const drawImgSet = (percent) => {
 const getResult = (count) => {
     $.ajax({
         type: "GET",
-        url: "/api/video/data/video_detected_data",
+        url: "http://localhost:5000/api/video/data/video_detected_data",
         data: {
             visual_count: count
         },
