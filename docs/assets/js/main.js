@@ -176,7 +176,7 @@ const getDetectResp = (file, id) => {
             //     ’timescore1’: [1.0,2.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
             //     ’timescore2’: [3.0,4.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
             // }
-            localStorage.setItem("dectData", data);
+            localStorage.setItem("dectData", JSON.stringify(data));
             nIntervId = setInterval(function() {
                 getDuration("tgVideo", localStorage.getItem("i"), "video");
             }, 1000);
@@ -196,11 +196,12 @@ const getDetectResp = (file, id) => {
 }
 
 const drawImgSet = (percent, data) => {
+    let obj = JSON.parse(data);
     let serial = (percent / 2) - 1;
     if (serial > 0) {
-        $('#detectResp').attr('src', data.seg_img_url[serial]);
+        $('#detectResp').attr('src', obj.seg_img_url[serial]);
     } else {
-        $('#detectResp').attr('src', data.seg_img_url[0]);
+        $('#detectResp').attr('src', obj.seg_img_url[0]);
     }
 }
 
