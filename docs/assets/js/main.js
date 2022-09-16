@@ -55,17 +55,8 @@ $('input[type=file]').change(function() {
         getResult(5);
     }
     if (filetype.indexOf('video') > -1) {
-        var $source = $('#tgVideo');
         $('#targetVideo').addClass("targetActive");
-        $source[0].src = URL.createObjectURL(this.files[0]);
-        $source.parent()[0].load();
-        // nIntervId = setInterval(function() {
-        //     getDuration("tgVideo", localStorage.getItem("i"), "video");
-        // }, 1000);
-        getDetectResp(this.files[0]);
-        getResult(5);
-        // console.log(this.files[0])
-        fileUpload(this.files[0]);
+        detectVideoProcedure(this.files[0]);
     }
     if (filetype.indexOf('audio') > -1) {
         var objUrl = getObjectURL(this.files[0]);
@@ -79,10 +70,28 @@ $('input[type=file]').change(function() {
     }
 });
 
+const detectVideoProcedure = async(file) => {
+    try {
+        const res = await fileUpload(file);
+        // {
+        //     ’code’: 20051
+        //     ’url’: ”http://localhost:5000/static/video/nhsijqpoda.mp4” 
+        // }
+        var $source = $('#tgVideo');
+        $source.attr("src", res.url);
+        // $source[0].src = URL.createObjectURL(this.files[0]);
+        $source.parent()[0].load();
+
+        getDetectResp(file);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const fileUpload = (file) => {
     var data = new FormData();
     data.append('video', file); //Correct: sending the Blob itself
-    $.ajax({
+    return $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',
         url: "http://localhost:5000/api/video/data/video_upload",
@@ -91,16 +100,13 @@ const fileUpload = (file) => {
         contentType: false,
         cache: false,
         timeout: 600000,
-        success: function(data) {
-            console.log("upload: " + data);
-            // {
-            //     ’code’: 20051
-            //     ’url’: ”http://localhost:5000/static/video/nhsijqpoda.mp4” 
-            // }
-        },
-        error: function(e) {
-            console.log("ERROR : ", e);
-        }
+        //     success: function(data) {
+        //         console.log("upload: " + data);
+        //         return data;
+        //     },
+        //     error: function(e) {
+        //         console.log("ERROR : ", e);
+        //     }
     });
 }
 
@@ -176,6 +182,7 @@ const getDetectResp = (file, id) => {
                 $('#detectRespChart').css('display', "flex");
                 drawChart(data);
             }
+            getResult(5);
         },
         error: function(e) {
             console.log("ERROR : ", e);
