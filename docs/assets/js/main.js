@@ -85,6 +85,7 @@ const detectVideoProcedure = async(file) => {
         getDetectResp(file);
     } catch (err) {
         console.log(err);
+        getDetectResp(file);
     }
 }
 
@@ -138,7 +139,9 @@ const getDuration = (id, i, type) => {
         if (progressPercent == 100) { stopPlay(); }
     }
 
-    drawImgSet(Math.round(progressPercent));
+    let data = localStorage.getItem("dectData");
+
+    drawImgSet(Math.round(progressPercent), data);
 
     $('#chartBar').css('width', progressPercent + '%');
     $('#dectBar').css('width', progressPercent + '%');
@@ -192,9 +195,8 @@ const getDetectResp = (file, id) => {
     // $('#detectResp').attr('src', "dist/img/favicon.jpg");
 }
 
-const drawImgSet = (percent) => {
+const drawImgSet = (percent, data) => {
     let serial = (percent / 2) - 1;
-    let data = localStorage.getItem("dectData");
     if (serial > 0) {
         $('#detectResp').attr('src', data.seg_img_url[serial]);
     } else {
