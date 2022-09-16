@@ -251,7 +251,7 @@ const drawList = (data) => {
         '<td>' + data.data[0].score_1 + '</td>' +
         '<td><div class="sparkbar" data-color="#00a65a" data-height="20">' + data.data[0].score_2 + '</div></td>' +
         '</tr>');
-    id, result, timestamp, title, size, duration
+    // id, result, timestamp, title, size, duration
     $("#metaBody").append(
         '<tr>' +
         '<td>' + data.data[0].id + '</td>' +
@@ -285,7 +285,7 @@ const drawChart = (data) => {
             labels: ['0s', '2s', '4s', '6s', '8s', '10s', '12s', '14s', '16s', '18s', '20s', '22s', '24s', '26s', '28s', '30s'],
             datasets: [{
                     type: 'line',
-                    data: data.timescore1, // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    data: data.time_score_1, // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                     backgroundColor: 'transparent',
                     borderColor: '#007bff',
                     pointBorderColor: '#007bff',
@@ -296,7 +296,7 @@ const drawChart = (data) => {
                 },
                 {
                     type: 'line',
-                    data: data.timescore2, //[79.248, 77.589, 12.641, 59.169, 32.479, 81.027, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    data: data.time_score_2, //[79.248, 77.589, 12.641, 59.169, 32.479, 81.027, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                     backgroundColor: 'tansparent',
                     borderColor: '#ced4da',
                     pointBorderColor: '#ced4da',
